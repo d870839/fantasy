@@ -21,7 +21,10 @@ def index():
 def fetch_data():
     response = requests.get(
     f"https://fantasy.espn.com/apis/v3/games/ffl/seasons/2024/segments/0/leagues/YOUR_LEAGUE_ID",
-    cookies={"swid": SWID, "espn_s2": ESPN_S2},
+    cookies = {
+    'swid': os.getenv("SWID"),
+    'espn_s2': os.getenv("ESPN_S2")
+},
     verify=certifi.where()  # ✅ Ensures proper cert chain
 )
     data = response.json()
