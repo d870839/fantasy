@@ -10,7 +10,7 @@ DB_PATH = 'league.db'
 
 # Replace with your values
 LEAGUE_ID = '2005813'
-SEASON = '2024'
+SEASON = '2023'
 SWID = '{BB347049-4815-4607-9D9F-D7A4D188AFA2}'
 ESPN_S2 = 'AECb%2FGmhFO0j3b6PvxaiLiChA3OYpSKewwXJ4Dz%2BZfkOafErF6%2FYbmAV4aAiL961pFmW%2BWTWMdY75kP09D7%2BDWNeh4vAL2pWvCA4v8%2BxBuU1c%2BzquBXIpbw%2F4OgKvyn7nqaAhMOo1OvwvXgJThgb4t74rSSrVMM3Jlog%2B5LcNVwiJwHes3HlbWz8t%2Bd8LNx4mLcuP3yQ4xvmwmRdaLSP%2Bf6hzkSRsVET9lKUAZxKCfjCRwBiNIWyWR4rC94PiGJYwiHatrafV6DJpoH%2BFwT7O%2F%2BLMn6S%2BkyTQydj1QHDbYu76g%3D%3D'
 
@@ -20,6 +20,7 @@ def index():
 
 @app.route('/fetch')
 def fetch_data():
+    import os, certifi
     url = f'https://fantasy.espn.com/apis/v3/games/ffl/seasons/{SEASON}/segments/0/leagues/{LEAGUE_ID}'
     cookies = {
         'swid': os.getenv("SWID"),
@@ -27,21 +28,19 @@ def fetch_data():
     }
 
     response = requests.get(url, cookies=cookies, verify=certifi.where())
-
-    # ✅ Log to stdout so Render can capture it
     app.logger.info(f"Status Code: {response.status_code}")
-    app.logger.info(f"Response Text (first 500 chars): {response.text[:500]}")
+    app.logger.info(f"Text Preview: {response.text[:300]}")
 
     try:
         data = response.json()
+        return jsonify(data)  # or extract teams if ready
     except Exception as e:
+        app.logger.error("Failed to parse JSON from ESPN.")
         return jsonify({
-            "error": "Invalid JSON response",
-            "status": response.status_code,
+            "error": "Invalid response from ESPN",
+            "status_code": response.status_code,
             "text": response.text[:300]
         }), 500
-
-    return jsonify(data)
 
 
 if __name__ == '__main__':
