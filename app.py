@@ -3,6 +3,7 @@ import requests
 import certifi
 import sqlite3
 import os
+import logging
 
 app = Flask(__name__)
 DB_PATH = 'league.db'
@@ -19,7 +20,6 @@ def index():
 
 @app.route('/fetch')
 def fetch_data():
-    import os, certifi
     url = f'https://fantasy.espn.com/apis/v3/games/ffl/seasons/{SEASON}/segments/0/leagues/{LEAGUE_ID}'
     cookies = {
         'swid': os.getenv("SWID"),
@@ -28,14 +28,18 @@ def fetch_data():
 
     response = requests.get(url, cookies=cookies, verify=certifi.where())
 
-    # Log the result so you can inspect it in Render logs
-    print("Status Code:", response.status_code)
-    print("Text Response (first 500):", response.text[:500])
+    # ✅ Log to stdout so Render can capture it
+    app.logger.info(f"Status Code: {response.status_code}")
+    app.logger.info(f"Response Text (first 500 chars): {response.text[:500]}")
 
     try:
         data = response.json()
     except Exception as e:
-        return jsonify({"error": "Invalid JSON response", "status": response.status_code, "text": response.text}), 500
+        return jsonify({
+            "error": "Invalid JSON response",
+            "status": response.status_code,
+            "text": response.text[:300]
+        }), 500
 
     return jsonify(data)
 
