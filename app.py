@@ -1,5 +1,6 @@
 from flask import Flask, render_template, request, jsonify
 import requests
+import certifi
 import sqlite3
 import os
 
@@ -20,8 +21,8 @@ def index():
 def fetch_data():
     url = f'https://fantasy.espn.com/apis/v3/games/ffl/seasons/{SEASON}/segments/0/leagues/{LEAGUE_ID}'
     cookies = {'swid': SWID, 'espn_s2': ESPN_S2}
-    r = requests.get(url, cookies=cookies)
-    data = r.json()
+    response = requests.get(url, cookies=cookies, verify=certifi.where())
+    data = response.json()
 
     # Example: extract team names
     teams = [{'name': team['location'] + ' ' + team['nickname']} for team in data['teams']]
