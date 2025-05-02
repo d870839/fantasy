@@ -19,14 +19,11 @@ def index():
 
 @app.route('/fetch', methods=['GET'])
 def fetch_data():
-    response = requests.get(
-    f"https://fantasy.espn.com/apis/v3/games/ffl/seasons/2024/segments/0/leagues/YOUR_LEAGUE_ID",
-    cookies = {
-    'swid': os.getenv("SWID"),
-    'espn_s2': os.getenv("ESPN_S2")
-},
+    url = f'https://fantasy.espn.com/apis/v3/games/ffl/seasons/{SEASON}/segments/0/leagues/{LEAGUE_ID}'
+    cookies = {'swid': os.getenv("SWID"), 'espn_s2': os.getenv("ESPN_S2")}
+    response = requests.get(url, cookies=cookies, verify=certifi.where())
     verify=certifi.where()  # ✅ Ensures proper cert chain
-)
+
     data = response.json()
 
     # Example: extract team names
