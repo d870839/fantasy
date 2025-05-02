@@ -17,18 +17,27 @@ ESPN_S2 = 'AECb%2FGmhFO0j3b6PvxaiLiChA3OYpSKewwXJ4Dz%2BZfkOafErF6%2FYbmAV4aAiL96
 def index():
     return render_template('index.html')
 
-@app.route('/fetch', methods=['GET'])
+@app.route('/fetch')
 def fetch_data():
+    import os, certifi
     url = f'https://fantasy.espn.com/apis/v3/games/ffl/seasons/{SEASON}/segments/0/leagues/{LEAGUE_ID}'
-    cookies = {'swid': os.getenv("SWID"), 'espn_s2': os.getenv("ESPN_S2")}
+    cookies = {
+        'swid': os.getenv("SWID"),
+        'espn_s2': os.getenv("ESPN_S2")
+    }
+
     response = requests.get(url, cookies=cookies, verify=certifi.where())
-    verify=certifi.where()  # ✅ Ensures proper cert chain
 
-    data = response.json()
+    # Log the result so you can inspect it in Render logs
+    print("Status Code:", response.status_code)
+    print("Text Response (first 500):", response.text[:500])
 
-    # Example: extract team names
-    teams = [{'name': team['location'] + ' ' + team['nickname']} for team in data['teams']]
-    return jsonify(teams)
+    try:
+        data = response.json()
+    except Exception as e:
+        return jsonify({"error": "Invalid JSON response", "status": response.status_code, "text": response.text}), 500
+
+    return jsonify(data)
 
 
 if __name__ == '__main__':
