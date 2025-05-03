@@ -5,6 +5,9 @@ import sqlite3
 import os
 import logging
 
+# Ensure logs go to stdout so Render sees them
+logging.basicConfig(level=logging.INFO)
+
 app = Flask(__name__)
 DB_PATH = 'league.db'
 
@@ -29,8 +32,8 @@ def fetch_data():
 
     response = requests.get(url, cookies=cookies, verify=certifi.where())
 
-    app.logger.info(f"ESPN status code: {response.status_code}")
-    app.logger.info(f"ESPN response text: {response.text[:500]}")  # first 500 chars
+    app.logger.info(f"Status code from ESPN: {response.status_code}")
+    app.logger.info(f"Response preview: {response.text[:500]}")
 
     try:
         data = response.json()
@@ -42,6 +45,7 @@ def fetch_data():
             "status": response.status_code,
             "text": response.text[:300]
         }), 500
+
 
 
 
