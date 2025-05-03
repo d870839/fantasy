@@ -28,19 +28,21 @@ def fetch_data():
     }
 
     response = requests.get(url, cookies=cookies, verify=certifi.where())
-    app.logger.info(f"Status Code: {response.status_code}")
-    app.logger.info(f"Text Preview: {response.text[:300]}")
+
+    app.logger.info(f"ESPN status code: {response.status_code}")
+    app.logger.info(f"ESPN response text: {response.text[:500]}")  # first 500 chars
 
     try:
         data = response.json()
-        return jsonify(data)  # or extract teams if ready
-    except Exception as e:
-        app.logger.error("Failed to parse JSON from ESPN.")
+        return jsonify(data)
+    except Exception:
+        app.logger.error("Failed to parse ESPN response as JSON.")
         return jsonify({
             "error": "Invalid response from ESPN",
-            "status_code": response.status_code,
+            "status": response.status_code,
             "text": response.text[:300]
         }), 500
+
 
 
 if __name__ == '__main__':
