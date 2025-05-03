@@ -25,12 +25,17 @@ def index():
 def fetch_data():
     import os, certifi
     url = f'https://fantasy.espn.com/apis/v3/games/ffl/seasons/{SEASON}/segments/0/leagues/{LEAGUE_ID}'
+    
     cookies = {
         'swid': os.getenv("SWID"),
         'espn_s2': os.getenv("ESPN_S2")
     }
 
-    response = requests.get(url, cookies=cookies, verify=certifi.where())
+    headers = {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36"
+    }
+
+    response = requests.get(url, cookies=cookies, headers=headers, verify=certifi.where())
 
     app.logger.info(f"Status code from ESPN: {response.status_code}")
     app.logger.info(f"Response preview: {response.text[:500]}")
@@ -45,6 +50,7 @@ def fetch_data():
             "status": response.status_code,
             "text": response.text[:300]
         }), 500
+
 
 
 
