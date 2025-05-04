@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Fantasy Matchup History</title>
+    <style>
+        table {
+            border-collapse: collapse;
+            margin-bottom: 40px;
+            width: 100%;
+        }
+        th, td {
+            border: 1px solid #aaa;
+            padding: 8px;
+            text-align: center;
+        }
+        h2 {
+            margin-top: 40px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Fantasy Football Matchup History</h1>
+    <div id="history"></div>
+
+    <script>
+        fetch('/history')
+            .then(res => res.json())
+            .then(data => {
+                const container = document.getElementById('history');
+
+                data.forEach(team => {
+                    const teamSection = document.createElement('section');
+                    const header = document.createElement('h2');
+                    header.textContent = `${team.name} (Owner: ${team.owner})`;
+                    teamSection.appendChild(header);
+
+                    const table = document.createElement('table');
+                    const thead = document.createElement('thead');
+                    thead.innerHTML = `
+                        <tr>
+                            <th>Week</th>
+                            <th>Points</th>
+                            <th>Projected</th>
+                            <th>Opponent</th>
+                            <th>Opponent Points</th>
+                            <th>Result</th>
+                        </tr>`;
+                    table.appendChild(thead);
+
+                    const tbody = document.createElement('tbody');
+                    team.matchups.forEach(m => {
+                        const row = document.createElement('tr');
+                        row.innerHTML = `
+                            <td>${m.week}</td>
+                            <td>${m.points.toFixed(2)}</td>
+                            <td>${m.projected.toFixed(2)}</td>
+                            <td>${m.opponent}</td>
+                            <td>${m.opponent_points.toFixed(2)}</td>
+                            <td>${m.won ? "W" : "L"}</td>`;
+                        tbody.appendChild(row);
+                    });
+
+                    table.appendChild(tbody);
+                    teamSection.appendChild(table);
+                    container.appendChild(teamSection);
+                });
+            })
+            .catch(err => {
+                console.error(err);
+                document.getElementById('history').textContent = 'Failed to load matchup history.';
+            });
+    </script>
+</body>
+</html>
