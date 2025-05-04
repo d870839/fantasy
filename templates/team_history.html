@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Team History</title>
+  <style>
+    table { border-collapse: collapse; margin-top: 20px; width: 100%; }
+    th, td { border: 1px solid #ccc; padding: 8px; text-align: center; }
+  </style>
+</head>
+<body>
+  <h1>Team History</h1>
+  <div id="history"></div>
+
+  <script type="text/javascript">
+    const teamId = {{ team_id | tojson | safe }};
+    fetch('/history/all-seasons')
+      .then(res => res.json())
+      .then(data => {
+        const container = document.getElementById('history');
+
+        data.forEach(season => {
+          const team = season.teams.find(t => t.id === teamId);
+          if (!team) return;
+
+          const section = document.createElement('section');
+          section.innerHTML = `
+            <h2>${season.season} – ${team.name} (Owner: ${team.owner})</h2>
+            <p>Record: ${team.wins}-${team.losses} | Best Margin: +${team.best_margin} | Worst Loss: ${team.worst_loss}</p>
+          `;
+          container.appendChild(section);
+        });
+      });
+  </script>
+</body>
+</html>
