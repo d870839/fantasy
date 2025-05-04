@@ -23,7 +23,10 @@ def fetch_teams():
     try:
         app.logger.info("Attempting to connect to ESPN League API...")
         league = League(league_id=league_id, year=season, swid=swid, espn_s2=espn_s2)
-        teams = [{"name": team.team_name, "owner": str(team.owners[0])} for team in league.teams]
+        teams = [{
+            "name": team.team_name,
+            "owner": team.owners[0].ownerName  # Correct way to access string name
+        } for team in league.teams]
         app.logger.info(f"Successfully pulled {len(teams)} teams.")
         return jsonify(teams)
     except Exception as e:
@@ -46,7 +49,7 @@ def fetch_matchup_history():
         for team in league.teams:
             team_data = {
                 "name": team.team_name,
-                "owner": f"{team.owners[0].get('firstName', '')} {team.owners[0].get('lastName', '')}".strip(),
+               "owner": getattr(team.owners[0], "ownerName", "Unknown"),
                 "matchups": []
             }
 
