@@ -6,7 +6,12 @@ function fetchStats() {
             list.innerHTML = '';
             data.forEach(team => {
                 const li = document.createElement('li');
-                li.textContent = team.name + ' (Owner: ' + team.owner + ')';
+                const btn = document.createElement('button');
+                btn.textContent = `${team.name} (Owner: ${team.owner})`;
+                btn.onclick = () => {
+                    window.location.href = `/team/${team.id}`;
+                };
+                li.appendChild(btn);
                 list.appendChild(li);
             });
         })
