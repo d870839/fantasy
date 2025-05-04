@@ -35,6 +35,7 @@ def fetch_teams():
         return jsonify({"error": str(e)}), 500
 
 @app.route('/history')
+@app.route('/history')
 def fetch_matchup_history():
     from espn_api.football import League
     league_id = 2005813
@@ -47,27 +48,53 @@ def fetch_matchup_history():
         data = []
 
         for team in league.teams:
+            matchups = []
+            wins = 0
+            losses = 0
+            best_margin = None
+            worst_loss = None
+
+            for matchup in team.schedule:
+                if matchup is None or matchup.opponent is None:
+                    continue  # skip bye weeks or null data
+
+                week = matchup.period
+                points = matchup.points
+                projected = matchup.projected_points
+                opp_name = matchup.opponent.team_name
+                opp_points = matchup.opponent.points
+                won = matchup.winner == 'WIN'
+                margin = round(points - opp_points, 2)
+
+                # Update W-L
+                if won:
+                    wins += 1
+                    if best_margin is None or margin > best_margin:
+                        best_margin = margin
+                else:
+                    losses += 1
+                    if worst_loss is None or margin < worst_loss:
+                        worst_loss = margin
+
+                matchups.append({
+                    "week": week,
+                    "points": points,
+                    "projected": projected,
+                    "opponent": opp_name,
+                    "opponent_points": opp_points,
+                    "won": won,
+                    "margin": margin
+                })
+
             team_data = {
                 "name": team.team_name,
                 "owner": team.owners[0].get("displayName", "Unknown"),
-                "matchups": []
+                "wins": wins,
+                "losses": losses,
+                "best_margin": best_margin,
+                "worst_loss": worst_loss,
+                "matchups": matchups
             }
-
-            for matchup in team.schedule:
-                if matchup is None:
-                    continue
-
-                opponent_name = matchup.opponent.team_name if matchup.opponent else "BYE"
-                opponent_score = matchup.opponent.points if matchup.opponent else 0
-
-                team_data["matchups"].append({
-                    "week": matchup.period,
-                    "points": matchup.points,
-                    "projected": matchup.projected_points,
-                    "opponent": opponent_name,
-                    "opponent_points": opponent_score,
-                    "won": matchup.winner == 'WIN'
-                })
 
             data.append(team_data)
 
@@ -76,6 +103,7 @@ def fetch_matchup_history():
         app.logger.error("Error fetching matchup history:")
         app.logger.error(str(e))
         return jsonify({"error": str(e)}), 500
+
 
 @app.route('/view-history')
 def view_history():
