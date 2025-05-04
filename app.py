@@ -35,7 +35,6 @@ def fetch_teams():
         return jsonify({"error": str(e)}), 500
 
 @app.route('/history')
-@app.route('/history')
 def fetch_matchup_history():
     from espn_api.football import League
     league_id = 2005813
