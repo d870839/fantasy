@@ -46,7 +46,7 @@ def fetch_matchup_history():
         for team in league.teams:
             team_data = {
                 "name": team.team_name,
-                "owner": str(team.owners[0]),
+                "owner": f"{team.owners[0].get('firstName', '')} {team.owners[0].get('lastName', '')}".strip(),
                 "matchups": []
             }
 
