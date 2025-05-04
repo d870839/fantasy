@@ -1,6 +1,10 @@
 from flask import Flask, render_template, jsonify
 from espn_api.football import League
 import os
+import logging
+
+# Configure logging so Render shows INFO and ERROR logs
+logging.basicConfig(level=logging.INFO)
 
 app = Flask(__name__)
 
@@ -10,19 +14,23 @@ def index():
 
 @app.route('/fetch')
 def fetch_teams():
-    league_id = 2005813  # Replace with your league ID
-    season = 2023        # Use current or past season
-
+    from espn_api.football import League
+    league_id = 2005813
+    season = 2023
     swid = os.getenv("SWID")
     espn_s2 = os.getenv("ESPN_S2")
 
     try:
-        league = League(league_id=league_id, year=season, espn_s2=espn_s2, swid=swid)
+        app.logger.info("Attempting to connect to ESPN League API...")
+        league = League(league_id=league_id, year=season, swid=swid, espn_s2=espn_s2)
         teams = [{"name": team.team_name, "owner": team.owner} for team in league.teams]
+        app.logger.info(f"Successfully pulled {len(teams)} teams.")
         return jsonify(teams)
     except Exception as e:
-        app.logger.error(f"Failed to fetch league: {e}")
+        app.logger.error("Error fetching league data:")
+        app.logger.error(str(e))
         return jsonify({"error": str(e)}), 500
+
 
 
 
