@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>All Seasons Fantasy Stats</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 40px; }
+    h2 { margin-top: 40px; }
+    table { border-collapse: collapse; width: 100%; margin-bottom: 40px; }
+    th, td { border: 1px solid #ccc; padding: 8px; text-align: center; }
+    th { background-color: #f0f0f0; cursor: pointer; }
+    .win { color: green; }
+    .loss { color: red; }
+  </style>
+</head>
+<body>
+  <h1>Fantasy Football Summary by Season</h1>
+  <label for="seasonFilter">Filter by season: </label>
+  <select id="seasonFilter"></select>
+
+  <div id="charts" style="margin: 30px 0;"></div>
+  <div id="tables"></div>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script>
+    fetch('/history/all-seasons')
+      .then(res => res.json())
+      .then(data => {
+        const seasonFilter = document.getElementById('seasonFilter');
+        const tablesContainer = document.getElementById('tables');
+        const chartsContainer = document.getElementById('charts');
+
+        const seasonMap = {};
+        data.forEach(seasonData => {
+          seasonMap[seasonData.season] = seasonData;
+          const option = document.createElement('option');
+          option.value = seasonData.season;
+          option.textContent = seasonData.season;
+          seasonFilter.appendChild(option);
+        });
+
+        function renderSeason(season) {
+          tablesContainer.innerHTML = '';
+          chartsContainer.innerHTML = '';
+          const teams = seasonMap[season].teams;
+
+          // Table
+          const table = document.createElement('table');
+          const thead = document.createElement('thead');
+          thead.innerHTML = `
+            <tr>
+              <th onclick="sortTable(0)">Team</th>
+              <th onclick="sortTable(1)">Owner</th>
+              <th onclick="sortTable(2)">Wins</th>
+              <th onclick="sortTable(3)">Losses</th>
+              <th onclick="sortTable(4)">Best Margin</th>
+              <th onclick="sortTable(5)">Worst Loss</th>
+            </tr>
+          `;
+          table.appendChild(thead);
+
+          const tbody = document.createElement('tbody');
+          teams.forEach(t => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+              <td>${t.name}</td>
+              <td>${t.owner}</td>
+              <td class="win">${t.wins}</td>
+              <td class="loss">${t.losses}</td>
+              <td>${t.best_margin ?? 'N/A'}</td>
+              <td>${t.worst_loss ?? 'N/A'}</td>
+            `;
+            tbody.appendChild(tr);
+          });
+          table.appendChild(tbody);
+          tablesContainer.appendChild(table);
+
+          // Chart
+          const canvas = document.createElement('canvas');
+          chartsContainer.appendChild(canvas);
+          new Chart(canvas, {
+            type: 'bar',
+            data: {
+              labels: teams.map(t => t.name),
+              datasets: [{
+                label: 'Wins by Team',
+                data: teams.map(t => t.wins),
+                backgroundColor: 'rgba(75, 192, 192, 0.6)'
+              }]
+            },
+            options: {
+              plugins: {
+                title: {
+                  display: true,
+                  text: `Wins in ${season}`
+                }
+              },
+              responsive: true,
+              scales: {
+                y: { beginAtZero: true }
+              }
+            }
+          });
+        }
+
+        seasonFilter.addEventListener('change', () => renderSeason(seasonFilter.value));
+        renderSeason(seasonFilter.value = seasonFilter.options[0].value);
+
+        window.sortTable = function(n) {
+          const table = tablesContainer.querySelector('table');
+          let switching = true, dir = "asc", switchcount = 0;
+          while (switching) {
+            switching = false;
+            const rows = table.rows;
+            for (let i = 1; i < rows.length - 1; i++) {
+              let shouldSwitch = false;
+              const x = rows[i].getElementsByTagName("TD")[n];
+              const y = rows[i + 1].getElementsByTagName("TD")[n];
+              const xVal = isNaN(x.innerText) ? x.innerText.toLowerCase() : parseFloat(x.innerText);
+              const yVal = isNaN(y.innerText) ? y.innerText.toLowerCase() : parseFloat(y.innerText);
+              if ((dir === "asc" && xVal > yVal) || (dir === "desc" && xVal < yVal)) {
+                shouldSwitch = true;
+                break;
+              }
+            }
+            if (shouldSwitch) {
+              rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
+              switching = true;
+              switchcount++;
+            } else {
+              if (switchcount === 0 && dir === "asc") {
+                dir = "desc";
+                switching = true;
+              }
+            }
+          }
+        }
+      });
+  </script>
+</body>
+</html>
