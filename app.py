@@ -25,7 +25,7 @@ def fetch_teams():
         league = League(league_id=league_id, year=season, swid=swid, espn_s2=espn_s2)
         teams = [{
             "name": team.team_name,
-            "owner": team.owners[0].ownerName  # Correct way to access string name
+            "owner": team.owners[0].get("displayName", "Unknown")
         } for team in league.teams]
         app.logger.info(f"Successfully pulled {len(teams)} teams.")
         return jsonify(teams)
@@ -49,7 +49,7 @@ def fetch_matchup_history():
         for team in league.teams:
             team_data = {
                 "name": team.team_name,
-               "owner": getattr(team.owners[0], "ownerName", "Unknown"),
+                "owner": team.owners[0].get("displayName", "Unknown"),
                 "matchups": []
             }
 
