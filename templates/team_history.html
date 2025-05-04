@@ -12,7 +12,7 @@
   <div id="history"></div>
 
   <script type="text/javascript">
-    const teamId = {{ team_id | tojson | safe }};
+    const teamId = "{{ team_id | tojson | safe }}";
     fetch('/history/all-seasons')
       .then(res => res.json())
       .then(data => {
