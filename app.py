@@ -137,7 +137,7 @@ def fetch_all_season_stats():
     espn_s2 = os.getenv("ESPN_S2")
     all_seasons = []
 
-    for season in range(2018, 2023):  # Adjust range as needed
+    for season in range(2023):  # Adjust range as needed
         try:
             league = League(
                 league_id=league_id,
