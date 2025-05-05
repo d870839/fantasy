@@ -137,17 +137,23 @@ def fetch_all_season_stats():
     espn_s2 = os.getenv("ESPN_S2")
     all_seasons = []
 
-    for season in range(2018, 2024):  # Adjust range based on your league's age
+    for season in range(2018, 2023):  # Adjust range as needed
         try:
-            league = League(league_id=league_id, year=season, swid=swid, espn_s2=espn_s2)
+            league = League(
+                league_id=league_id,
+                year=season,
+                swid=swid,
+                espn_s2=espn_s2,
+                fetch_matchup_score=True  # ✅ this line is key
+            )
             app.logger.info(f"Processing season {season}...")
+
             season_data = {
                 "season": season,
                 "teams": []
             }
 
             for team in league.teams:
-                matchups = []
                 wins = 0
                 losses = 0
                 best_margin = None
@@ -167,15 +173,15 @@ def fetch_all_season_stats():
                         losses += 1
                         worst_loss = margin if worst_loss is None else min(worst_loss, margin)
 
-                team_data = {
+                season_data["teams"].append({
+                    "id": team.team_id,
                     "name": team.team_name,
                     "owner": team.owners[0].get("displayName", "Unknown"),
                     "wins": wins,
                     "losses": losses,
                     "best_margin": best_margin,
                     "worst_loss": worst_loss
-                }
-                season_data["teams"].append(team_data)
+                })
 
             all_seasons.append(season_data)
         except Exception as e:
@@ -183,6 +189,7 @@ def fetch_all_season_stats():
             continue
 
     return jsonify(all_seasons)
+
 
 
 @app.route('/view-history')
