@@ -42,16 +42,17 @@
   <div id="history"></div>
 
   <script type="text/javascript">
-    const teamId = "{{ team_id | tojson | safe }}";
+    const teamId = parseInt("{{ team_id | tojson | safe }}");  // ✅ parse as int
+  
     fetch('/history/all-seasons')
       .then(res => res.json())
       .then(data => {
         const container = document.getElementById('history');
-
+  
         data.forEach(season => {
-          const team = season.teams.find(t => t.id === teamId);
+          const team = season.teams.find(t => t.id === teamId);  // ✅ strict number comparison
           if (!team) return;
-
+  
           const section = document.createElement('section');
           section.innerHTML = `
             <h2>${season.season} – ${team.name} (Owner: ${team.owner})</h2>
@@ -61,5 +62,6 @@
         });
       });
   </script>
+  
 </body>
 </html>
