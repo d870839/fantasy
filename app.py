@@ -36,6 +36,30 @@ def fetch_teams():
         app.logger.error(str(e))
         return jsonify({"error": str(e)}), 500
 
+@app.route('/teams')
+def get_team_list():
+    from espn_api.football import League
+    league_id = 2005813
+    season = 2023
+    swid = os.getenv("SWID")
+    espn_s2 = os.getenv("ESPN_S2")
+
+    try:
+        league = League(league_id=league_id, year=season, swid=swid, espn_s2=espn_s2)
+        return jsonify([
+            {
+                "id": team.team_id,
+                "name": team.team_name,
+                "owner": team.owners[0].get("displayName", "Unknown")
+            }
+            for team in league.teams
+        ])
+    except Exception as e:
+        app.logger.error("Failed to get team list for nav dropdown:")
+        app.logger.error(str(e))
+        return jsonify([]), 500
+
+
 @app.route('/history')
 def fetch_matchup_history():
     from espn_api.football import League

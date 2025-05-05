@@ -13,6 +13,36 @@
   </style>
 </head>
 <body>
+    <nav style="margin-bottom: 20px;">
+        <a href="/" style="margin-right: 20px;">🏠 Home</a>
+        <a href="/view-history/all" style="margin-right: 20px;">📊 All Seasons</a>
+      
+        <label for="teamDropdown">🔽 Jump to Team: </label>
+        <select id="teamDropdown">
+          <option value="">-- Select a Team --</option>
+        </select>
+      </nav>
+      
+      <script>
+        fetch('/teams')
+          .then(res => res.json())
+          .then(teams => {
+            const dropdown = document.getElementById('teamDropdown');
+            teams.forEach(team => {
+              const option = document.createElement('option');
+              option.value = team.id;
+              option.textContent = `${team.name} (${team.owner})`;
+              dropdown.appendChild(option);
+            });
+      
+            dropdown.addEventListener('change', () => {
+              const teamId = dropdown.value;
+              if (teamId) window.location.href = `/team/${teamId}`;
+            });
+          })
+          .catch(err => console.error('Failed to load teams:', err));
+      </script>
+      
   <h1>Fantasy Football Summary by Season</h1>
   <label for="seasonFilter">Filter by season: </label>
   <select id="seasonFilter"></select>
